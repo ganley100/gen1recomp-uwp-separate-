@@ -1,0 +1,112 @@
+name: xbox-uwp-games
+
+# Builds the standalone Xbox Dev Mode apps (Gen1Recomp Red and Gen1Recomp
+# Ruby) and uploads one zip per game. Runs on pushes that touch the UWP port
+# on any branch, and on demand from the Actions tab.
+#
+# Packages are signed with a throwaway self-signed certificate made on the
+# runner (subject CN=Gen1Recomp, matching the manifest publisher) so Xbox
+# Device Portal accepts them. The public .cer is included in each zip.
+
+on:
+  push:
+    paths:
+      - 'ports/uwp/**'
+      - 'scripts/build_xbox_uwp.sh'
+      - 'scripts/xbox-uwp/**'
+      - 'scripts/pack_love.sh'
+      - 'src/**'
+      - 'main.lua'
+      - 'conf.lua'
+      - '.github/workflows/xbox-uwp-games.yml'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version (X.Y.Z)'
+        required: false
+        default: '0.0.0'
+
+concurrency:
+  group: xbox-uwp-games-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  VERSION: ${{ github.event.inputs.version || '0.0.0' }}
+
+jobs:
+  payload:
+    name: build shared game.love
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Xbox UWP offline selftest
+        run: bash scripts/xbox-uwp/selftest_build_xbox_uwp.sh
+      - name: Build shared payload
+        run: |
+          scripts/pack_love.sh \
+            --output .bazinga/work/ci-game.love \
+            --listing .bazinga/work/ci-love-listing.txt \
+            --version "$VERSION"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: xbox-uwp-games-payload
+          path: .bazinga/work/ci-game.love
+          if-no-files-found: error
+          retention-days: 1
+
+  build:
+    name: build Gen1Recomp ${{ matrix.game }}
+    needs: payload
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        game: [red, ruby]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: xbox-uwp-games-payload
+          path: .bazinga/work
+      - name: Build Xbox UWP package
+        shell: bash
+        run: |
+          bash scripts/build_xbox_uwp.sh \
+            --release \
+            --game "${{ matrix.game }}" \
+            --version "$VERSION" \
+            --publisher "CN=Gen1Recomp" \
+            --game-love .bazinga/work/ci-game.love
+      - name: Sign with a test certificate and stage
+        shell: pwsh
+        run: |
+          $password = [guid]::NewGuid().ToString()
+          $cert = New-SelfSignedCertificate -Type Custom -Subject 'CN=Gen1Recomp' `
+            -KeyUsage DigitalSignature -FriendlyName 'Gen1Recomp test signing' `
+            -CertStoreLocation 'Cert:\CurrentUser\My' `
+            -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}')
+          $pfx = Join-Path $env:RUNNER_TEMP 'gen1recomp-test.pfx'
+          $cer = Join-Path $env:RUNNER_TEMP 'gen1recomp-test.cer'
+          Export-PfxCertificate -Cert $cert -FilePath $pfx `
+            -Password (ConvertTo-SecureString $password -AsPlainText -Force) | Out-Null
+          Export-Certificate -Cert $cert -FilePath $cer | Out-Null
+          Import-Certificate -FilePath $cer -CertStoreLocation Cert:\LocalMachine\Root | Out-Null
+          Import-Certificate -FilePath $cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null
+          scripts/xbox-uwp/stage_release.ps1 `
+            -Version $env:VERSION `
+            -Configuration Release `
+            -Game '${{ matrix.game }}' `
+            -BuildInfo '.bazinga/work/xbox-uwp-${{ matrix.game }}-build-info.json' `
+            -CertificatePath $pfx `
+            -CertificatePassword $password
+      - uses: actions/upload-artifact@v7
+        with:
+          name: gen1recomp-${{ matrix.game }}-xbox-uwp
+          path: |
+            dist/xbox-uwp/gen1recomp-${{ matrix.game }}-${{ env.VERSION }}-xbox-uwp.zip
+            dist/xbox-uwp/gen1recomp-${{ matrix.game }}-${{ env.VERSION }}-xbox-uwp.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
