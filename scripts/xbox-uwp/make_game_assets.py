@@ -15,7 +15,7 @@ from PIL import Image, ImageStat
 
 ROOT = Path(__file__).resolve().parents[2]
 ASSETS = ROOT / "ports" / "uwp" / "Assets"
-GAMES = ("red", "ruby")
+GAMES = ("red", "ruby", "firered")
 
 SQUARE = {
     "Square44x44Logo.png": 44,

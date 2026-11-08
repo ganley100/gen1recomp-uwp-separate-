@@ -64,6 +64,24 @@
       "cacheVariables": {
         "GEN1RECOMP_UWP_GAME": "ruby"
       }
+    },
+    {
+      "name": "uwp-firered-relwithdebinfo",
+      "inherits": "uwp-common",
+      "displayName": "Gen1Recomp FireRed Xbox UWP (RelWithDebInfo)",
+      "binaryDir": "${sourceDir}/build/firered/relwithdebinfo",
+      "cacheVariables": {
+        "GEN1RECOMP_UWP_GAME": "firered"
+      }
+    },
+    {
+      "name": "uwp-firered-release",
+      "inherits": "uwp-common",
+      "displayName": "Gen1Recomp FireRed Xbox UWP (Release)",
+      "binaryDir": "${sourceDir}/build/firered/release",
+      "cacheVariables": {
+        "GEN1RECOMP_UWP_GAME": "firered"
+      }
     }
   ],
   "buildPresets": [
@@ -100,6 +118,18 @@
     {
       "name": "uwp-ruby-release",
       "configurePreset": "uwp-ruby-release",
+      "configuration": "Release",
+      "jobs": 8
+    },
+    {
+      "name": "uwp-firered-relwithdebinfo",
+      "configurePreset": "uwp-firered-relwithdebinfo",
+      "configuration": "RelWithDebInfo",
+      "jobs": 8
+    },
+    {
+      "name": "uwp-firered-release",
+      "configurePreset": "uwp-firered-release",
       "configuration": "Release",
       "jobs": 8
     }

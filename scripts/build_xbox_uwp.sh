@@ -4,9 +4,9 @@
 # Usage:
 #   scripts/build_xbox_uwp.sh [--release|--relwithdebinfo]
 #                             [--version X.Y.Z] [--game-love PATH]
-#                             [--publisher SUBJECT] [--game all|red|ruby]
-#   --game red|ruby builds a separate single-game app that reads its ROM
-#   from D:\DevelopmentFiles\Gen1Recomp Red|Ruby on the Xbox.
+#                             [--publisher SUBJECT] [--game all|red|ruby|firered]
+#   --game red|ruby|firered builds a separate single-game app that reads its
+#   ROM from D:\DevelopmentFiles\Gen1Recomp Red|Ruby|FireRed on the Xbox.
 
 set -euo pipefail
 
@@ -43,7 +43,7 @@ while [ $# -gt 0 ]; do
       shift 2
       ;;
     --game)
-      [ $# -ge 2 ] || fail "--game requires all, red or ruby"
+      [ $# -ge 2 ] || fail "--game requires all, red, ruby or firered"
       GAME="$2"
       shift 2
       ;;
@@ -62,8 +62,8 @@ done
 
 case "$GAME" in
   all) PRESET="uwp-$(printf '%s' "$CONFIGURATION" | tr '[:upper:]' '[:lower:]')" ;;
-  red|ruby) PRESET="uwp-$GAME-$(printf '%s' "$CONFIGURATION" | tr '[:upper:]' '[:lower:]')" ;;
-  *) fail "invalid game '$GAME' (expected all, red or ruby)" ;;
+  red|ruby|firered) PRESET="uwp-$GAME-$(printf '%s' "$CONFIGURATION" | tr '[:upper:]' '[:lower:]')" ;;
+  *) fail "invalid game '$GAME' (expected all, red, ruby or firered)" ;;
 esac
 
 case "$(uname -s)" in

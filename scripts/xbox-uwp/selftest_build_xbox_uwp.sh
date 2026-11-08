@@ -42,7 +42,7 @@ for placeholder in UWP_PROJECT UWP_DISPLAY_NAME UWP_PHONE_PRODUCT_ID UWP_EXTRA_C
 done
 
 say "checking the single-game packages"
-for game in red ruby; do
+for game in red ruby firered; do
   for preset in "uwp-$game-release" "uwp-$game-relwithdebinfo"; do
     grep -q "\"name\": \"$preset\"" "$UWP_ROOT/CMakePresets.json" \
       || fail "missing CMake preset $preset"
@@ -56,6 +56,8 @@ grep -q 'DevelopmentFiles\\\\Gen1Recomp Red' "$UWP_ROOT/CMakeLists.txt" \
   || fail "Red package does not read D:\\DevelopmentFiles\\Gen1Recomp Red"
 grep -q 'DevelopmentFiles\\\\Gen1Recomp Ruby' "$UWP_ROOT/CMakeLists.txt" \
   || fail "Ruby package does not read D:\\DevelopmentFiles\\Gen1Recomp Ruby"
+grep -q 'DevelopmentFiles\\\\Gen1Recomp FireRed' "$UWP_ROOT/CMakeLists.txt" \
+  || fail "FireRed package does not read D:\\DevelopmentFiles\\Gen1Recomp FireRed"
 
 bash "$SCRIPT_DIR/write_build_info.sh" \
   "$temp_dir/build-info.json" 1.2.3 Release >/dev/null

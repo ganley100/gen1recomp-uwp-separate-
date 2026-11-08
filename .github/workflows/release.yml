@@ -286,7 +286,7 @@ jobs:
       - name: Build Xbox UWP package
         shell: bash
         run: |
-          for game in all red ruby; do
+          for game in all red ruby firered; do
             bash scripts/build_xbox_uwp.sh \
               --release \
               --game "$game" \
@@ -302,7 +302,7 @@ jobs:
           if (-not $env:UWP_PFX) {
               exit 0
           }
-          foreach ($game in 'all', 'red', 'ruby') {
+          foreach ($game in 'all', 'red', 'ruby', 'firered') {
               $buildInfo = if ($game -eq 'all') {
                   '.bazinga/work/xbox-uwp-build-info.json'
               } else {
@@ -327,6 +327,8 @@ jobs:
             dist/xbox-uwp/gen1recomp-red-${{ needs.version.outputs.version }}-xbox-uwp.zip.sha256
             dist/xbox-uwp/gen1recomp-ruby-${{ needs.version.outputs.version }}-xbox-uwp.zip
             dist/xbox-uwp/gen1recomp-ruby-${{ needs.version.outputs.version }}-xbox-uwp.zip.sha256
+            dist/xbox-uwp/gen1recomp-firered-${{ needs.version.outputs.version }}-xbox-uwp.zip
+            dist/xbox-uwp/gen1recomp-firered-${{ needs.version.outputs.version }}-xbox-uwp.zip.sha256
           if-no-files-found: error
           retention-days: 7
       - name: Remove signing certificate

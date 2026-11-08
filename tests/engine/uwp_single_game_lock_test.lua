@@ -1,4 +1,4 @@
--- Single-game Xbox packages (Gen1Recomp Red / Gen1Recomp Ruby) pass
+-- Single-game Xbox packages (Gen1Recomp Red / Ruby / FireRed) pass
 -- --lock-game=<id>; the launcher must then offer that game only.
 package.path = "./?.lua;./?/init.lua;" .. package.path
 
@@ -30,6 +30,12 @@ _G.arg = { [0] = "Gen1RecompRuby", "gen1recomp.love", "--fused", "--game=ruby", 
 check(GameLock.id() == "ruby", "--lock-game is case-insensitive")
 check(ids(SecretGames.order({ launcher = true })) == " ruby ", "Ruby package lists Ruby only")
 check(GameLock.allows("ruby") and not GameLock.allows("sapphire"), "Ruby package allows Ruby only")
+
+GameLock._set(nil)
+_G.arg = { [0] = "Gen1RecompFireRed", "gen1recomp.love", "--fused", "--game=firered", "--lock-game=firered" }
+check(GameLock.id() == "firered", "--lock-game=firered is read from the host arguments")
+check(ids(SecretGames.order({ launcher = true })) == " firered ", "FireRed package lists FireRed only")
+check(not SecretGames.visible("leafgreen"), "FireRed package hides LeafGreen")
 
 GameLock._set(nil)
 _G.arg = { "--lock-game=notagame" }

@@ -4,7 +4,7 @@ param(
     [string]$Version,
     [ValidateSet('Release', 'RelWithDebInfo')]
     [string]$Configuration = 'Release',
-    [ValidateSet('all', 'red', 'ruby')]
+    [ValidateSet('all', 'red', 'ruby', 'firered')]
     [string]$Game = 'all',
     [string]$PackageRoot,
     [string]$OutputRoot,
@@ -21,6 +21,7 @@ $configurationDirectory = $Configuration.ToLowerInvariant()
 switch ($Game) {
     'red'  { $projectName = 'Gen1RecompRed';  $title = 'Gen1Recomp Red';  $buildDirectory = "red\$configurationDirectory" }
     'ruby' { $projectName = 'Gen1RecompRuby'; $title = 'Gen1Recomp Ruby'; $buildDirectory = "ruby\$configurationDirectory" }
+    'firered' { $projectName = 'Gen1RecompFireRed'; $title = 'Gen1Recomp FireRed'; $buildDirectory = "firered\$configurationDirectory" }
     default { $projectName = 'Gen1RecompUWP'; $title = 'Gen1Recomp'; $buildDirectory = $configurationDirectory }
 }
 $releaseStem = if ($Game -eq 'all') { "gen1recomp-$Version-xbox-uwp" } else { "gen1recomp-$Game-$Version-xbox-uwp" }

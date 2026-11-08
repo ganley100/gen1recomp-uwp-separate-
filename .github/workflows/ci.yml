@@ -255,10 +255,10 @@ jobs:
             --release \
             --version 0.0.0 \
             --game-love .bazinga/work/ci-game.love
-      - name: Build Xbox UWP Red and Ruby packages
+      - name: Build Xbox UWP Red, Ruby and FireRed packages
         shell: bash
         run: |
-          for game in red ruby; do
+          for game in red ruby firered; do
             bash scripts/build_xbox_uwp.sh \
               --release \
               --game "$game" \
@@ -276,6 +276,8 @@ jobs:
             dist/xbox-uwp/gen1recomp-red-0.0.0-xbox-uwp.zip.sha256
             dist/xbox-uwp/gen1recomp-ruby-0.0.0-xbox-uwp.zip
             dist/xbox-uwp/gen1recomp-ruby-0.0.0-xbox-uwp.zip.sha256
+            dist/xbox-uwp/gen1recomp-firered-0.0.0-xbox-uwp.zip
+            dist/xbox-uwp/gen1recomp-firered-0.0.0-xbox-uwp.zip.sha256
           if-no-files-found: error
           retention-days: 7
 

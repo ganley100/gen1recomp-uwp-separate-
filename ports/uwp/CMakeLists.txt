@@ -6,9 +6,11 @@ cmake_minimum_required(VERSION 3.24)
 #          D:\DevelopmentFiles\Gen1Recomp Red
 #   ruby - "Gen1Recomp Ruby", boots Pokemon Ruby only and reads ROMs from
 #          D:\DevelopmentFiles\Gen1Recomp Ruby
-# Each package has its own identity, so all three install side by side.
-set(GEN1RECOMP_UWP_GAME "all" CACHE STRING "Xbox package to build: all, red or ruby")
-set_property(CACHE GEN1RECOMP_UWP_GAME PROPERTY STRINGS all red ruby)
+#   firered - "Gen1Recomp FireRed", boots Pokemon FireRed only and reads ROMs
+#          from D:\DevelopmentFiles\Gen1Recomp FireRed
+# Each package has its own identity, so they all install side by side.
+set(GEN1RECOMP_UWP_GAME "all" CACHE STRING "Xbox package to build: all, red, ruby or firered")
+set_property(CACHE GEN1RECOMP_UWP_GAME PROPERTY STRINGS all red ruby firered)
 if(GEN1RECOMP_UWP_GAME STREQUAL "all")
     set(UWP_PROJECT "Gen1RecompUWP")
     set(UWP_DISPLAY_NAME "Gen1Recomp")
@@ -36,8 +38,17 @@ elseif(GEN1RECOMP_UWP_GAME STREQUAL "ruby")
     set(UWP_GAME_ID "ruby")
     set(UWP_DEV_FOLDER "D:\\DevelopmentFiles\\Gen1Recomp Ruby")
     set(UWP_ASSETS_DIR "Assets/ruby")
+elseif(GEN1RECOMP_UWP_GAME STREQUAL "firered")
+    set(UWP_PROJECT "Gen1RecompFireRed")
+    set(UWP_DISPLAY_NAME "Gen1Recomp FireRed")
+    set(UWP_DESCRIPTION "Gen1Recomp FireRed Version for Xbox Dev Mode")
+    set(UWP_PHONE_PRODUCT_ID "c7d93a40-1e5b-4c62-8f3a-6b0e9d2f5a03")
+    set(UWP_BACKGROUND "#C2410C")
+    set(UWP_GAME_ID "firered")
+    set(UWP_DEV_FOLDER "D:\\DevelopmentFiles\\Gen1Recomp FireRed")
+    set(UWP_ASSETS_DIR "Assets/firered")
 else()
-    message(FATAL_ERROR "GEN1RECOMP_UWP_GAME must be all, red or ruby.")
+    message(FATAL_ERROR "GEN1RECOMP_UWP_GAME must be all, red, ruby or firered.")
 endif()
 
 project(${UWP_PROJECT} LANGUAGES CXX)

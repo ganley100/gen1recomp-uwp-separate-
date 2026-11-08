@@ -1,7 +1,7 @@
 name: xbox-uwp-games
 
-# Builds the standalone Xbox Dev Mode apps (Gen1Recomp Red and Gen1Recomp
-# Ruby) and uploads one zip per game. Runs on pushes that touch the UWP port
+# Builds the standalone Xbox Dev Mode apps (Gen1Recomp Red, Ruby and
+# FireRed) and uploads one zip per game. Runs on pushes that touch the UWP port
 # on any branch, and on demand from the Actions tab.
 #
 # Packages are signed with a throwaway self-signed certificate made on the
@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        game: [red, ruby]
+        game: [red, ruby, firered]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
