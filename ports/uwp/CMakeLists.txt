@@ -1,5 +1,46 @@
 cmake_minimum_required(VERSION 3.24)
-project(Gen1RecompUWP LANGUAGES CXX)
+
+# Which package to build:
+#   all  - the multi-game launcher (Gen1RecompUWP)
+#   red  - "Gen1Recomp Red", boots Pokemon Red only and reads ROMs from
+#          D:\DevelopmentFiles\Gen1Recomp Red
+#   ruby - "Gen1Recomp Ruby", boots Pokemon Ruby only and reads ROMs from
+#          D:\DevelopmentFiles\Gen1Recomp Ruby
+# Each package has its own identity, so all three install side by side.
+set(GEN1RECOMP_UWP_GAME "all" CACHE STRING "Xbox package to build: all, red or ruby")
+set_property(CACHE GEN1RECOMP_UWP_GAME PROPERTY STRINGS all red ruby)
+if(GEN1RECOMP_UWP_GAME STREQUAL "all")
+    set(UWP_PROJECT "Gen1RecompUWP")
+    set(UWP_DISPLAY_NAME "Gen1Recomp")
+    set(UWP_DESCRIPTION "Gen1Recomp for Xbox Dev Mode")
+    set(UWP_PHONE_PRODUCT_ID "5074018d-a46b-4dd3-b7fa-93a1e39858ad")
+    set(UWP_BACKGROUND "#101820")
+    set(UWP_GAME_ID "")
+    set(UWP_DEV_FOLDER "")
+    set(UWP_ASSETS_DIR "Assets")
+elseif(GEN1RECOMP_UWP_GAME STREQUAL "red")
+    set(UWP_PROJECT "Gen1RecompRed")
+    set(UWP_DISPLAY_NAME "Gen1Recomp Red")
+    set(UWP_DESCRIPTION "Gen1Recomp Red Version for Xbox Dev Mode")
+    set(UWP_PHONE_PRODUCT_ID "3f1c6a52-8d0e-4b7a-9c21-5e7d2a4b1f01")
+    set(UWP_BACKGROUND "#8B0A0A")
+    set(UWP_GAME_ID "red")
+    set(UWP_DEV_FOLDER "D:\\DevelopmentFiles\\Gen1Recomp Red")
+    set(UWP_ASSETS_DIR "Assets/red")
+elseif(GEN1RECOMP_UWP_GAME STREQUAL "ruby")
+    set(UWP_PROJECT "Gen1RecompRuby")
+    set(UWP_DISPLAY_NAME "Gen1Recomp Ruby")
+    set(UWP_DESCRIPTION "Gen1Recomp Ruby Version for Xbox Dev Mode")
+    set(UWP_PHONE_PRODUCT_ID "9b4e2d17-6c3a-4f85-a0d9-2c8e1b7f4a02")
+    set(UWP_BACKGROUND "#8B0A0A")
+    set(UWP_GAME_ID "ruby")
+    set(UWP_DEV_FOLDER "D:\\DevelopmentFiles\\Gen1Recomp Ruby")
+    set(UWP_ASSETS_DIR "Assets/ruby")
+else()
+    message(FATAL_ERROR "GEN1RECOMP_UWP_GAME must be all, red or ruby.")
+endif()
+
+project(${UWP_PROJECT} LANGUAGES CXX)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     message(FATAL_ERROR "Configure with a WindowsStore preset.")
@@ -30,6 +71,19 @@ string(REPLACE "\"" "&quot;" UWP_PUBLISHER_XML "${UWP_PUBLISHER_XML}")
 string(REPLACE "<" "&lt;" UWP_PUBLISHER_XML "${UWP_PUBLISHER_XML}")
 string(REPLACE ">" "&gt;" UWP_PUBLISHER_XML "${UWP_PUBLISHER_XML}")
 set(UWP_PACKAGE_VERSION "${GEN1RECOMP_VERSION}.0")
+# Single-game packages read D:\DevelopmentFiles, which needs broad file access.
+if(UWP_DEV_FOLDER)
+    set(UWP_EXTRA_CAPABILITIES "    <rescap:Capability Name=\"broadFileSystemAccess\" />")
+else()
+    set(UWP_EXTRA_CAPABILITIES "")
+endif()
+# Escaped for a C string literal: every backslash doubled.
+string(REPLACE "\\" "\\\\" UWP_DEV_FOLDER_C "${UWP_DEV_FOLDER}")
+configure_file(
+    "${CMAKE_CURRENT_LIST_DIR}/app/game_config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/game_config.h"
+    @ONLY
+)
 set(PACKAGE_MANIFEST "${CMAKE_CURRENT_BINARY_DIR}/Package.appxmanifest")
 configure_file(
     "${CMAKE_CURRENT_LIST_DIR}/Package.appxmanifest.in"
@@ -90,7 +144,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     VS_GLOBAL_DefaultLanguage "en-US"
     VS_SDK_REFERENCES "Microsoft.VCLibs, Version=14.0"
 )
-target_include_directories(${PROJECT_NAME} PRIVATE "${SDL2_ROOT}/include/SDL2")
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${SDL2_ROOT}/include/SDL2"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated"
+)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     "${LOVE_ROOT}/lib/lovestatic.lib"
     "${LOVE_ROOT}/lib/liblove.lib"
@@ -129,7 +186,7 @@ set_source_files_properties(${PACKAGE_ROOT_FILES} PROPERTIES
     VS_DEPLOYMENT_LOCATION "."
 )
 
-file(GLOB PACKAGE_ASSETS CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/Assets/*.png")
+file(GLOB PACKAGE_ASSETS CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/${UWP_ASSETS_DIR}/*.png")
 set_source_files_properties(${PACKAGE_ASSETS} PROPERTIES
     VS_DEPLOYMENT_CONTENT TRUE
     VS_DEPLOYMENT_LOCATION "Assets"

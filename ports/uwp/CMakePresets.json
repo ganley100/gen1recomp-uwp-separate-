@@ -15,13 +15,55 @@
       "name": "uwp-relwithdebinfo",
       "inherits": "uwp-common",
       "displayName": "Gen1Recomp Xbox UWP (RelWithDebInfo)",
-      "binaryDir": "${sourceDir}/build/relwithdebinfo"
+      "binaryDir": "${sourceDir}/build/relwithdebinfo",
+      "cacheVariables": {
+        "GEN1RECOMP_UWP_GAME": "all"
+      }
     },
     {
       "name": "uwp-release",
       "inherits": "uwp-common",
       "displayName": "Gen1Recomp Xbox UWP (Release)",
-      "binaryDir": "${sourceDir}/build/release"
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "GEN1RECOMP_UWP_GAME": "all"
+      }
+    },
+    {
+      "name": "uwp-red-relwithdebinfo",
+      "inherits": "uwp-common",
+      "displayName": "Gen1Recomp Red Xbox UWP (RelWithDebInfo)",
+      "binaryDir": "${sourceDir}/build/red/relwithdebinfo",
+      "cacheVariables": {
+        "GEN1RECOMP_UWP_GAME": "red"
+      }
+    },
+    {
+      "name": "uwp-red-release",
+      "inherits": "uwp-common",
+      "displayName": "Gen1Recomp Red Xbox UWP (Release)",
+      "binaryDir": "${sourceDir}/build/red/release",
+      "cacheVariables": {
+        "GEN1RECOMP_UWP_GAME": "red"
+      }
+    },
+    {
+      "name": "uwp-ruby-relwithdebinfo",
+      "inherits": "uwp-common",
+      "displayName": "Gen1Recomp Ruby Xbox UWP (RelWithDebInfo)",
+      "binaryDir": "${sourceDir}/build/ruby/relwithdebinfo",
+      "cacheVariables": {
+        "GEN1RECOMP_UWP_GAME": "ruby"
+      }
+    },
+    {
+      "name": "uwp-ruby-release",
+      "inherits": "uwp-common",
+      "displayName": "Gen1Recomp Ruby Xbox UWP (Release)",
+      "binaryDir": "${sourceDir}/build/ruby/release",
+      "cacheVariables": {
+        "GEN1RECOMP_UWP_GAME": "ruby"
+      }
     }
   ],
   "buildPresets": [
@@ -34,6 +76,30 @@
     {
       "name": "uwp-release",
       "configurePreset": "uwp-release",
+      "configuration": "Release",
+      "jobs": 8
+    },
+    {
+      "name": "uwp-red-relwithdebinfo",
+      "configurePreset": "uwp-red-relwithdebinfo",
+      "configuration": "RelWithDebInfo",
+      "jobs": 8
+    },
+    {
+      "name": "uwp-red-release",
+      "configurePreset": "uwp-red-release",
+      "configuration": "Release",
+      "jobs": 8
+    },
+    {
+      "name": "uwp-ruby-relwithdebinfo",
+      "configurePreset": "uwp-ruby-relwithdebinfo",
+      "configuration": "RelWithDebInfo",
+      "jobs": 8
+    },
+    {
+      "name": "uwp-ruby-release",
+      "configurePreset": "uwp-ruby-release",
       "configuration": "Release",
       "jobs": 8
     }

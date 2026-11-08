@@ -286,11 +286,14 @@ jobs:
       - name: Build Xbox UWP package
         shell: bash
         run: |
-          bash scripts/build_xbox_uwp.sh \
-            --release \
-            --version "${{ needs.version.outputs.version }}" \
-            --publisher "$UWP_PUBLISHER" \
-            --game-love .bazinga/work/game.love
+          for game in all red ruby; do
+            bash scripts/build_xbox_uwp.sh \
+              --release \
+              --game "$game" \
+              --version "${{ needs.version.outputs.version }}" \
+              --publisher "$UWP_PUBLISHER" \
+              --game-love .bazinga/work/game.love
+          done
       - name: Sign and stage Xbox UWP release
         shell: pwsh
         env:
@@ -299,12 +302,20 @@ jobs:
           if (-not $env:UWP_PFX) {
               exit 0
           }
-          scripts/xbox-uwp/stage_release.ps1 `
-            -Version '${{ needs.version.outputs.version }}' `
-            -Configuration Release `
-            -BuildInfo .bazinga/work/xbox-uwp-build-info.json `
-            -CertificatePath $env:UWP_PFX `
-            -CertificatePassword $env:CERTIFICATE_PASSWORD
+          foreach ($game in 'all', 'red', 'ruby') {
+              $buildInfo = if ($game -eq 'all') {
+                  '.bazinga/work/xbox-uwp-build-info.json'
+              } else {
+                  ".bazinga/work/xbox-uwp-$game-build-info.json"
+              }
+              scripts/xbox-uwp/stage_release.ps1 `
+                -Version '${{ needs.version.outputs.version }}' `
+                -Configuration Release `
+                -Game $game `
+                -BuildInfo $buildInfo `
+                -CertificatePath $env:UWP_PFX `
+                -CertificatePassword $env:CERTIFICATE_PASSWORD
+          }
       - name: Upload Xbox UWP release
         uses: actions/upload-artifact@v7
         with:
@@ -312,6 +323,10 @@ jobs:
           path: |
             dist/xbox-uwp/gen1recomp-${{ needs.version.outputs.version }}-xbox-uwp.zip
             dist/xbox-uwp/gen1recomp-${{ needs.version.outputs.version }}-xbox-uwp.zip.sha256
+            dist/xbox-uwp/gen1recomp-red-${{ needs.version.outputs.version }}-xbox-uwp.zip
+            dist/xbox-uwp/gen1recomp-red-${{ needs.version.outputs.version }}-xbox-uwp.zip.sha256
+            dist/xbox-uwp/gen1recomp-ruby-${{ needs.version.outputs.version }}-xbox-uwp.zip
+            dist/xbox-uwp/gen1recomp-ruby-${{ needs.version.outputs.version }}-xbox-uwp.zip.sha256
           if-no-files-found: error
           retention-days: 7
       - name: Remove signing certificate

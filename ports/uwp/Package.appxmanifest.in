@@ -3,11 +3,12 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  IgnorableNamespaces="uap mp">
-  <Identity Name="Gen1RecompUWP" Publisher="@UWP_PUBLISHER_XML@" Version="@UWP_PACKAGE_VERSION@" />
-  <mp:PhoneIdentity PhoneProductId="5074018d-a46b-4dd3-b7fa-93a1e39858ad" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap mp rescap">
+  <Identity Name="@UWP_PROJECT@" Publisher="@UWP_PUBLISHER_XML@" Version="@UWP_PACKAGE_VERSION@" />
+  <mp:PhoneIdentity PhoneProductId="@UWP_PHONE_PRODUCT_ID@" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>Gen1Recomp</DisplayName>
+    <DisplayName>@UWP_DISPLAY_NAME@</DisplayName>
     <PublisherDisplayName>Gen1Recomp</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -18,18 +19,18 @@
     <Resource Language="x-generate" />
   </Resources>
   <Applications>
-    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="Gen1RecompUWP.App">
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="@UWP_PROJECT@.App">
       <uap:VisualElements
-        DisplayName="Gen1Recomp"
-        Description="Gen1Recomp for Xbox Dev Mode"
-        BackgroundColor="#101820"
+        DisplayName="@UWP_DISPLAY_NAME@"
+        Description="@UWP_DESCRIPTION@"
+        BackgroundColor="@UWP_BACKGROUND@"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
         <uap:DefaultTile
           Square71x71Logo="Assets\SmallTile.png"
           Wide310x150Logo="Assets\WideTile.png"
           Square310x310Logo="Assets\LargeTile.png" />
-        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#101820" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="@UWP_BACKGROUND@" />
       </uap:VisualElements>
     </Application>
   </Applications>
@@ -39,5 +40,6 @@
     <Capability Name="privateNetworkClientServer" />
     <Capability Name="codeGeneration" />
     <uap:Capability Name="removableStorage" />
+@UWP_EXTRA_CAPABILITIES@
   </Capabilities>
 </Package>

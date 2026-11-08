@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Write provenance for an Xbox UWP package.
 #
-# Usage: scripts/xbox-uwp/write_build_info.sh OUTPUT VERSION CONFIGURATION
+# Usage: scripts/xbox-uwp/write_build_info.sh OUTPUT VERSION CONFIGURATION [GAME]
 
 set -euo pipefail
 
@@ -12,6 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT="${1:-}"
 VERSION="${2:-}"
 CONFIGURATION="${3:-}"
+GAME="${4:-all}"
 MANIFEST="$UWP_ROOT/third_party/manifest.json"
 
 [ -n "$OUTPUT" ] && [ -n "$VERSION" ] && [ -n "$CONFIGURATION" ] \
@@ -39,6 +40,7 @@ cat > "$OUTPUT" <<EOF
   "platform": "xbox-uwp",
   "version": "$VERSION",
   "configuration": "$CONFIGURATION",
+  "game": "$GAME",
   "gitCommit": "$GIT_COMMIT",
   "loveCommit": "$LOVE_COMMIT",
   "dependencyManifestSha256": "$MANIFEST_SHA256",

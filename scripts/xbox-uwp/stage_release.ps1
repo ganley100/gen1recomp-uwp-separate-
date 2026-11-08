@@ -4,6 +4,8 @@ param(
     [string]$Version,
     [ValidateSet('Release', 'RelWithDebInfo')]
     [string]$Configuration = 'Release',
+    [ValidateSet('all', 'red', 'ruby')]
+    [string]$Game = 'all',
     [string]$PackageRoot,
     [string]$OutputRoot,
     [string]$BuildInfo,
@@ -16,16 +18,22 @@ $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $configurationDirectory = $Configuration.ToLowerInvariant()
+switch ($Game) {
+    'red'  { $projectName = 'Gen1RecompRed';  $title = 'Gen1Recomp Red';  $buildDirectory = "red\$configurationDirectory" }
+    'ruby' { $projectName = 'Gen1RecompRuby'; $title = 'Gen1Recomp Ruby'; $buildDirectory = "ruby\$configurationDirectory" }
+    default { $projectName = 'Gen1RecompUWP'; $title = 'Gen1Recomp'; $buildDirectory = $configurationDirectory }
+}
+$releaseStem = if ($Game -eq 'all') { "gen1recomp-$Version-xbox-uwp" } else { "gen1recomp-$Game-$Version-xbox-uwp" }
 if (-not $PackageRoot) {
-    $PackageRoot = Join-Path $repositoryRoot "ports\uwp\build\$configurationDirectory\AppPackages\Gen1RecompUWP"
+    $PackageRoot = Join-Path $repositoryRoot "ports\uwp\build\$buildDirectory\AppPackages\$projectName"
 }
 if (-not $OutputRoot) {
     $OutputRoot = Join-Path $repositoryRoot 'dist\xbox-uwp'
 }
 
 $packageVersion = "$Version.0"
-$packageDirectory = Join-Path $PackageRoot "Gen1RecompUWP_${packageVersion}_x64_Test"
-$package = Join-Path $packageDirectory "Gen1RecompUWP_${packageVersion}_x64.msix"
+$packageDirectory = Join-Path $PackageRoot "${projectName}_${packageVersion}_x64_Test"
+$package = Join-Path $packageDirectory "${projectName}_${packageVersion}_x64.msix"
 if (-not (Test-Path -LiteralPath $package -PathType Leaf)) {
     throw "Expected MSIX was not found: $package"
 }
@@ -93,7 +101,7 @@ if (Test-Path -LiteralPath $stage) {
 }
 New-Item -ItemType Directory -Path $stage | Out-Null
 
-$releasePackage = "gen1recomp-$Version-xbox-uwp.msix"
+$releasePackage = "$releaseStem.msix"
 Copy-Item -LiteralPath $package -Destination (Join-Path $stage $releasePackage)
 $dependencies = Join-Path $packageDirectory 'Dependencies\x64'
 if (Test-Path -LiteralPath $dependencies -PathType Container) {
@@ -106,17 +114,28 @@ if ($BuildInfo -and (Test-Path -LiteralPath $BuildInfo -PathType Leaf)) {
 }
 if ($certificate) {
     [System.IO.File]::WriteAllBytes(
-        (Join-Path $stage 'Gen1RecompUWP.cer'),
+        (Join-Path $stage "$projectName.cer"),
         $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
     )
 }
 
+$romFolder = ''
+if ($Game -ne 'all') {
+    $romFolder = @"
+
+ROM folder: copy your own ROM dump into
+  D:\DevelopmentFiles\$title
+with Xbox Device Portal (File explorer > DevelopmentFiles). The app creates
+this folder on first launch and imports the ROM from it on every start.
+"@
+}
 $install = @"
-Gen1Recomp $Version for Xbox Dev Mode
+$title $Version for Xbox Dev Mode
 
 Install the MSIX and any packages under Dependencies through Xbox Device Portal.
 The certificate is public and is included only when the package was release-signed.
 ROMs, saves and mods are not included.
+$romFolder
 "@
 [System.IO.File]::WriteAllText(
     (Join-Path $stage 'INSTALL.txt'),
@@ -124,7 +143,7 @@ ROMs, saves and mods are not included.
     [System.Text.UTF8Encoding]::new($false)
 )
 
-$archivePath = Join-Path $OutputRoot "gen1recomp-$Version-xbox-uwp.zip"
+$archivePath = Join-Path $OutputRoot "$releaseStem.zip"
 if (Test-Path -LiteralPath $archivePath) {
     Remove-Item -LiteralPath $archivePath -Force
 }

@@ -873,6 +873,14 @@ function RomImporter:_stepBaseRomScan()
           path = path,
           name = path:match("[^/\\]+$") or path,
         }
+        -- A single-game Xbox package (GameLock) imports its own ROM as soon
+        -- as the host has copied it in from D:\DevelopmentFiles, so the
+        -- player never has to press Import for the one game it ships.
+        if version == require("src.core.GameLock").id()
+            and not self._lockedBaseRomImported then
+          self._lockedBaseRomImported = true
+          self:choose(version)
+        end
       end
     end
   end
@@ -2121,7 +2129,7 @@ function RomImporter.new(onComplete, opts)
     self.romName[version] = "pokemon_" .. info.id .. ext
   end
   if GameVersion.VERSIONS[self.tab] and not SecretGames.shown(self, self.tab) then
-    self.tab = "red"
+    self.tab = require("src.core.GameLock").id() or "red"
   end
   local portableErr = CacheFs.portableError()
   if portableErr then

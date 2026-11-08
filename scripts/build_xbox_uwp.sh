@@ -4,7 +4,9 @@
 # Usage:
 #   scripts/build_xbox_uwp.sh [--release|--relwithdebinfo]
 #                             [--version X.Y.Z] [--game-love PATH]
-#                             [--publisher SUBJECT]
+#                             [--publisher SUBJECT] [--game all|red|ruby]
+#   --game red|ruby builds a separate single-game app that reads its ROM
+#   from D:\DevelopmentFiles\Gen1Recomp Red|Ruby on the Xbox.
 
 set -euo pipefail
 
@@ -13,7 +15,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$SCRIPT_DIR/xbox-uwp/common.sh"
 
 CONFIGURATION="Release"
-PRESET="uwp-release"
+GAME="all"
 GAME_LOVE=""
 VERSION="0.0.0"
 VERSION_EXPLICIT=0
@@ -23,12 +25,10 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --release)
       CONFIGURATION="Release"
-      PRESET="uwp-release"
       shift
       ;;
     --relwithdebinfo)
       CONFIGURATION="RelWithDebInfo"
-      PRESET="uwp-relwithdebinfo"
       shift
       ;;
     --game-love)
@@ -42,18 +42,29 @@ while [ $# -gt 0 ]; do
       VERSION_EXPLICIT=1
       shift 2
       ;;
+    --game)
+      [ $# -ge 2 ] || fail "--game requires all, red or ruby"
+      GAME="$2"
+      shift 2
+      ;;
     --publisher)
       [ $# -ge 2 ] || fail "--publisher requires a certificate subject"
       PUBLISHER="$2"
       shift 2
       ;;
     -h|--help)
-      sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *) fail "unknown argument: $1" ;;
   esac
 done
+
+case "$GAME" in
+  all) PRESET="uwp-$(printf '%s' "$CONFIGURATION" | tr '[:upper:]' '[:lower:]')" ;;
+  red|ruby) PRESET="uwp-$GAME-$(printf '%s' "$CONFIGURATION" | tr '[:upper:]' '[:lower:]')" ;;
+  *) fail "invalid game '$GAME' (expected all, red or ruby)" ;;
+esac
 
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*) ;;
@@ -91,22 +102,27 @@ else
   fi
 fi
 
-say "configuring Xbox UWP ($CONFIGURATION)"
+say "configuring Xbox UWP $GAME ($CONFIGURATION)"
 cmake --preset "$PRESET" -S "$(windows_path "$UWP_ROOT")" \
   "-DGEN1RECOMP_LOVE:FILEPATH=$(windows_path "$GAME_LOVE")" \
   "-DGEN1RECOMP_VERSION:STRING=$VERSION" \
   "-DGEN1RECOMP_UWP_PUBLISHER:STRING=$PUBLISHER"
 
-say "building Xbox UWP ($CONFIGURATION)"
+say "building Xbox UWP $GAME ($CONFIGURATION)"
 (cd "$UWP_ROOT" && cmake --build --preset "$PRESET")
 
-build_info="$WORK/xbox-uwp-build-info.json"
+if [ "$GAME" = "all" ]; then
+  build_info="$WORK/xbox-uwp-build-info.json"
+else
+  build_info="$WORK/xbox-uwp-$GAME-build-info.json"
+fi
 bash "$SCRIPT_DIR/xbox-uwp/write_build_info.sh" \
-  "$build_info" "$VERSION" "$CONFIGURATION"
+  "$build_info" "$VERSION" "$CONFIGURATION" "$GAME"
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File \
   "$(windows_path "$SCRIPT_DIR/xbox-uwp/stage_release.ps1")" \
   -Version "$VERSION" \
   -Configuration "$CONFIGURATION" \
+  -Game "$GAME" \
   -BuildInfo "$(windows_path "$build_info")"
 
 say "done. See dist/xbox-uwp/"

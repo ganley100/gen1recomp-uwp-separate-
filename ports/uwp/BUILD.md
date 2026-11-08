@@ -90,6 +90,41 @@ Run the offline packaging checks from Git Bash:
 bash scripts/xbox-uwp/selftest_build_xbox_uwp.sh
 ```
 
+## Separate Red and Ruby Apps
+
+Besides the multi-game launcher, the port builds two standalone Xbox apps:
+
+| `--game` | App name on Xbox  | Package identity | Reads ROMs from                        |
+| -------- | ----------------- | ---------------- | -------------------------------------- |
+| `all`    | Gen1Recomp        | `Gen1RecompUWP`  | file picker / `baseroms`               |
+| `red`    | Gen1Recomp Red    | `Gen1RecompRed`  | `D:\DevelopmentFiles\Gen1Recomp Red`  |
+| `ruby`   | Gen1Recomp Ruby   | `Gen1RecompRuby` | `D:\DevelopmentFiles\Gen1Recomp Ruby` |
+
+Each has its own identity, tile art and save data, so all three install side
+by side. Build them from Git Bash:
+
+```bash
+scripts/build_xbox_uwp.sh --release --game red  --version 1.2.3
+scripts/build_xbox_uwp.sh --release --game ruby --version 1.2.3
+```
+
+A single-game app boots straight into its game and its launcher shows only
+that game. At every start the host copies any `.gb`, `.gbc` or `.gba` in its
+`D:\DevelopmentFiles` folder into `LocalState\pokemon-love2d\baseroms`; the
+launcher matches it by SHA-1 and imports it without a button press. The app
+creates the folder on first launch, so after installing, start it once, then
+upload your ROM with Xbox Device Portal (File explorer, `DevelopmentFiles`,
+`Gen1Recomp Red` or `Gen1Recomp Ruby`) and start it again. Reading that folder
+uses the `broadFileSystemAccess` capability, which only these two packages
+declare. The file picker still works if the folder is empty.
+
+The tile and splash images live under `Assets/red` and `Assets/ruby`. They are
+generated from the key art in `Assets/source`; after replacing that art run:
+
+```bash
+python3 scripts/xbox-uwp/make_game_assets.py
+```
+
 ## Build Output
 
 Visual Studio package output lands under:
@@ -103,6 +138,8 @@ The build also stages the distributable archive and checksum under:
 ```text
 dist\xbox-uwp\gen1recomp-X.Y.Z-xbox-uwp.zip
 dist\xbox-uwp\gen1recomp-X.Y.Z-xbox-uwp.zip.sha256
+dist\xbox-uwp\gen1recomp-red-X.Y.Z-xbox-uwp.zip    (--game red)
+dist\xbox-uwp\gen1recomp-ruby-X.Y.Z-xbox-uwp.zip   (--game ruby)
 ```
 
 The archive contains the MSIX, framework dependencies, build provenance and,

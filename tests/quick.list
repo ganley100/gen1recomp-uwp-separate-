@@ -512,6 +512,7 @@ tests/engine/launcher_pinned_footer_3113.lua
 tests/engine/launcher_return_pointer_bug2079.lua
 tests/engine/launcher_scroll_test.lua
 tests/engine/launcher_secret_emerald_test.lua
+tests/engine/uwp_single_game_lock_test.lua
 tests/engine/launcher_settings_persist_2740.lua
 tests/engine/launcher_single_scroller_3088.lua
 tests/engine/launcher_skins_options_reads_bug2038.lua

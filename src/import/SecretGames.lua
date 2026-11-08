@@ -45,6 +45,8 @@ function SecretGames.reload()
 end
 
 function SecretGames.visible(id)
+  -- A single-game package (src/core/GameLock) offers its own game only.
+  if not require("src.core.GameLock").allows(id) then return false end
   if not SecretGames.GAMES[id] then return true end
   SecretGames.update()
   return unlocked[id] == true
